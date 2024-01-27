@@ -1,7 +1,9 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:weather_app/data/my_location.dart';
+import 'package:weather_app/data/network.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:weather_app/screens/weather_screen.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -9,6 +11,8 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingState extends State<LoadingScreen> {
+  late double latitude2;
+  late double longitude2;
 
   @override
   void initState() {
@@ -17,10 +21,20 @@ class _LoadingState extends State<LoadingScreen> {
   }
 
   void getLocation() async {
-    LocationPermission permission = await Geolocator.requestPermission();
-    Position position = await Geolocator.
-    getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    print(position);
+    final String apiKey = dotenv.get('API_KEY');
+    MyLocation myLocation = MyLocation();
+    await myLocation.getCurrentLocation();
+    latitude2 = myLocation.latitude;
+    longitude2 = myLocation.longitude;
+
+    Network network = Network(
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude2&lon=$longitude2&appid=$apiKey&units=metric');
+
+    var weatherData = await network.getJsonData();
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return WeatherScreen(parseWeatherData: weatherData,);
+    }));
   }
 
   @override
