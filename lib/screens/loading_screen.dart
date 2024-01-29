@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:weather_app/data/my_location.dart';
 import 'package:weather_app/data/network.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -28,25 +29,27 @@ class _LoadingState extends State<LoadingScreen> {
     longitude2 = myLocation.longitude;
 
     Network network = Network(
-        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude2&lon=$longitude2&appid=$apiKey&units=metric');
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude2&lon=$longitude2&appid=$apiKey&units=metric',
+    'https://api.openweathermap.org/data/2.5/air_pollution?lat=$latitude2&lon=$longitude2&appid=$apiKey');
 
     var weatherData = await network.getJsonData();
+    var airData = await network.getAirData();
+    print(airData);
 
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return WeatherScreen(parseWeatherData: weatherData,);
+      return WeatherScreen(parseWeatherData: weatherData, parseAirPollution: airData);
     }));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
+      backgroundColor: Colors.amber,
       body: Center(
-        child: ElevatedButton(
-          onPressed: (){},
-          child: const Text(
-            'Get My location',
-            style: TextStyle(color: Colors.white),
-          ),
+        child: LoadingIndicator(
+          indicatorType: Indicator.ballClipRotate,
+          colors: [Colors.redAccent],
+          strokeWidth: 2,
         ),
       ),
     );
